@@ -5,17 +5,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIHlNKRZGlEO27QAiMDSx1PF99gQ47shvjWtPia3HA2rxabhiISilyR4_NvHh-ojOAofR3MIhUNMzo/pub?output=csv';
     
     // テスト用のデータ（実際の実装では削除または置き換える）
-//     const testData = `title,published,url,date,image,play_list1,play_list2,play_list3,,memo
-// ChatGPTに痩せる方法聞いてみた,true,https://youtu.be/SvB5e4zzBRY,20250407,ダイエット,文系女子高生のCharGPT相談,,,,チャンネル作成
-// ChatGPTに人間の仕事を奪うつもりか聞いてみた,true,https://youtu.be/0nFS0AtBkXo,20250408,仕事相談,文系女子高生のCharGPT相談,,,,
-// 金欠Kが格安コーデを相談する,true,https://youtu.be/RsR9WJf0h-Q,20250409,ディズニーコーデ,文系女子高生のCharGPT相談,,,,
-// 数学、マジ分からんのでChatGPTに勉強法聞いてみた,true,https://youtu.be/ArT3yZ-x5X0,20250410,数学入門,文系女子高生のCharGPT相談,,,,
-// 雨の日に傘を忘れた。自分を全肯定してくれるAIに泣きついてみた,true,https://youtu.be/wMKNKx1HId8,20250411,雨の日の相談,文系女子高生のCharGPT相談,,,,
-// AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwkWaTbEOY,20250412,宿題,文系女子高生のCharGPT相談,,,,
-// 文系？理系？どっちも好きなんだけど,true,https://youtu.be/zXZ8Khom_Zk,20250413,文系理系,文系女子高生のCharGPT相談,,,,
-// 学校だるい。理由なく休みたい。どう言い訳すれば？,true,https://youtu.be/-G5yF8ZCMe0,20250414,学校休みたい,文系女子高生のCharGPT相談,,,,
-// タイトル,false,https://youtu.be/SvB5e4zzBRY,20250415,none,文系女子高生のCharGPT相談,,,,
-// タイトル,false,https://youtu.be/SvB5e4zzBRY,20250416,none,文系女子高生のCharGPT相談,,,,`;
+    const testData = `title,published,url,date,image,play_list1,play_list2,play_list3,,memo
+ChatGPTに痩せる方法聞いてみた,true,https://youtu.be/SvB5e4zzBRY,20250407,ダイエット,文系女子高生のCharGPT相談,,,,チャンネル作成
+ChatGPTに人間の仕事を奪うつもりか聞いてみた,true,https://youtu.be/0nFS0AtBkXo,20250408,仕事相談,文系女子高生のCharGPT相談,,,,
+金欠Kが格安コーデを相談する,true,https://youtu.be/RsR9WJf0h-Q,20250409,ディズニーコーデ,文系女子高生のCharGPT相談,,,,
+数学、マジ分からんのでChatGPTに勉強法聞いてみた,true,https://youtu.be/ArT3yZ-x5X0,20250410,数学入門,文系女子高生のCharGPT相談,,,,
+雨の日に傘を忘れた。自分を全肯定してくれるAIに泣きついてみた,true,https://youtu.be/wMKNKx1HId8,20250411,雨の日の相談,文系女子高生のCharGPT相談,,,,
+AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwkWaTbEOY,20250412,宿題,文系女子高生のCharGPT相談,,,,
+文系？理系？どっちも好きなんだけど,true,https://youtu.be/zXZ8Khom_Zk,20250413,文系理系,文系女子高生のCharGPT相談,,,,
+学校だるい。理由なく休みたい。どう言い訳すれば？,true,https://youtu.be/-G5yF8ZCMe0,20250414,学校休みたい,文系女子高生のCharGPT相談,,,,
+タイトル,false,https://youtu.be/SvB5e4zzBRY,20250415,none,文系女子高生のCharGPT相談,,,,
+タイトル,false,https://youtu.be/SvB5e4zzBRY,20250416,none,文系女子高生のCharGPT相談,,,,`;
 
     // CSVを解析して動画を表示する関数
     function processCSV(csvText) {
@@ -56,7 +56,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // YouTubeのサムネイルURLを生成
             const youtubeId = getYouTubeId(video.url);
-            const thumbnailUrl = `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`;
+            // 複数解像度のサムネイルを試す
+            const thumbnailUrl = `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
+            // mqdefault.jpg (中品質) - 320x180 - スマホでも読み込みやすい
+            // その他のオプション:
+            // default.jpg (低品質) - 120x90
+            // hqdefault.jpg (高品質) - 480x360
+            // sddefault.jpg (標準画質) - 640x480
+            // maxresdefault.jpg (最高画質) - 1280x720
             
             // プレイリストタグを生成
             const playlistTags = createPlaylistTags(video);
@@ -159,12 +166,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Google Spreadsheetを使用
     fetch(csvUrl)
         .then(response => {
-            // console.log('Response status:', response.status);
+            console.log('Response status:', response.status);
             return response.text(); // ここでreturnが必要
         })
         .then(text => {
-            // console.log('CSV data received, length:', text.length);
-            // console.log(text)
+            console.log('CSV data received, length:', text.length);
             processCSV(text);
         })
         .catch(error => {
