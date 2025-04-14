@@ -75,7 +75,7 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
                 <div class="video-info">
                     <h3 class="video-title">${video.title}</h3>
                     <div class="video-meta">
-                        <span class="video-date">${dateStr}</span>
+                        <span class="video-date">公開日: ${dateStr}</span>
                     </div>
                     <div class="video-playlists">
                         ${playlistTags}
