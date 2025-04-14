@@ -70,19 +70,54 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="../js/youtube.js"></script>
     <script>
-        // サムネイルのフォールバック処理
-        // サムネイルが読み込めなかったときに、hqdefaultサイズの画像を読み込む
+        // 高度なサムネイルフォールバック処理
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
+            // サムネイルの読み込み状態をチェックする関数
+            function checkThumbnails() {
                 const thumbnails = document.querySelectorAll('.thumbnail-img');
                 thumbnails.forEach(img => {
-                    if (img.complete && img.naturalHeight === 0) {
-                        // 画像の読み込みに失敗した場合
-                        const videoId = img.src.split('/')[4];
-                        img.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                    // 画像の読み込みに失敗した場合または高さが0の場合
+                    if (img.complete && (img.naturalHeight === 0 || !img.naturalWidth)) {
+                        const sources = img.dataset.sources.split(',');
+                        const currentIndex = parseInt(img.dataset.currentIndex, 10);
+                        
+                        // 次のソースがあれば試す
+                        if (currentIndex < sources.length - 1) {
+                            const nextIndex = currentIndex + 1;
+                            const nextSource = sources[nextIndex];
+                            img.dataset.currentIndex = nextIndex;
+                            img.src = nextSource;
+                            console.log(`サムネイル読み込み失敗。次のソースを試します: ${nextSource}`);
+                        }
                     }
                 });
-            }, 2000); // 2秒後にチェック
+            }
+            
+            // 3秒後に最初のチェック
+            setTimeout(checkThumbnails, 3000);
+            
+            // さらに3秒後に2回目のチェック (合計6秒後)
+            setTimeout(checkThumbnails, 6000);
+            
+            // インスタアプリ内ブラウザ検出
+            function isInstagramBrowser() {
+                const userAgent = navigator.userAgent.toLowerCase();
+                return userAgent.indexOf('instagram') > -1;
+            }
+            
+            // インスタアプリ内ブラウザなら、ロード直後に代替ソースを試す
+            if (isInstagramBrowser()) {
+                console.log("Instagram内ブラウザを検出しました。代替サムネイルを使用します。");
+                setTimeout(function() {
+                    const thumbnails = document.querySelectorAll('.thumbnail-img');
+                    thumbnails.forEach(img => {
+                        const sources = img.dataset.sources.split(',');
+                        // 最初からPlaceholderまたは3番目のソースを使用
+                        img.src = sources[3] || sources[sources.length - 1];
+                        img.dataset.currentIndex = 3;
+                    });
+                }, 100);
+            }
         });
     </script>
 </body>

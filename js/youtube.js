@@ -56,14 +56,18 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
             
             // YouTubeのサムネイルURLを生成
             const youtubeId = getYouTubeId(video.url);
-            // 複数解像度のサムネイルを試す
-            const thumbnailUrl = `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
-            // mqdefault.jpg (中品質) - 320x180 - スマホでも読み込みやすい
-            // その他のオプション:
-            // default.jpg (低品質) - 120x90
-            // hqdefault.jpg (高品質) - 480x360
-            // sddefault.jpg (標準画質) - 640x480
-            // maxresdefault.jpg (最高画質) - 1280x720
+            
+            // サムネイル画像のプレースホルダー（動画ID+タイトル文字列から生成する代替画像）
+            const placeholderUrl = `https://placehold.co/480x360/333333/FFFFFF?text=${encodeURIComponent(youtubeId)}`;
+            
+            // バックアップサムネイルを設定（複数の選択肢）
+            const thumbnailSources = [
+                `https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`,
+                `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
+                `https://i.ytimg.com/vi/${youtubeId}/sddefault.jpg`,
+                `https://img.youtube.com/vi/${youtubeId}/0.jpg`,
+                placeholderUrl
+            ];
             
             // プレイリストタグを生成
             const playlistTags = createPlaylistTags(video);
@@ -73,7 +77,11 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
             videoCard.dataset.playlists = getPlaylists(video).join(',');
             videoCard.innerHTML = `
                 <a href="${video.url}" target="_blank" class="video-thumbnail">
-                    <img src="${thumbnailUrl}" alt="${video.title}">
+                    <img src="${thumbnailSources[0]}" 
+                         alt="${video.title}" 
+                         class="thumbnail-img"
+                         data-sources="${thumbnailSources.join(',')}"
+                         data-current-index="0">
                     <div class="video-play-button">
                         <i class="fas fa-play"></i>
                     </div>
