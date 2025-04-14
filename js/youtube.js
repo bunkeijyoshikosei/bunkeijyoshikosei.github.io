@@ -9,7 +9,7 @@ ChatGPTに痩せる方法聞いてみた,true,https://youtu.be/SvB5e4zzBRY,20250
 ChatGPTに人間の仕事を奪うつもりか聞いてみた,true,https://youtu.be/0nFS0AtBkXo,20250408,仕事相談,文系女子高生のCharGPT相談,,,,
 金欠Kが格安コーデを相談する,true,https://youtu.be/RsR9WJf0h-Q,20250409,ディズニーコーデ,文系女子高生のCharGPT相談,,,,
 数学、マジ分からんのでChatGPTに勉強法聞いてみた,true,https://youtu.be/ArT3yZ-x5X0,20250410,数学入門,文系女子高生のCharGPT相談,,,,
-雨の日に傘を忘れた。自分を全肯定してくれるAIに泣きついてみた,true,https://youtu.be/wMKNKx1HId8,20250411,雨の日の相談,文系女子高生のCharGPT相談,,,,
+雨の日に傘を忘れた。自分を全肯定してくれるAIに泣きついてみた,true,https://youtu.be/3zzyRGQEJX8,20250411,雨の日の相談,文系女子高生のCharGPT相談,,,,
 AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwkWaTbEOY,20250412,宿題,文系女子高生のCharGPT相談,,,,
 文系？理系？どっちも好きなんだけど,true,https://youtu.be/zXZ8Khom_Zk,20250413,文系理系,文系女子高生のCharGPT相談,,,,
 学校だるい。理由なく休みたい。どう言い訳すれば？,true,https://youtu.be/-G5yF8ZCMe0,20250414,学校休みたい,文系女子高生のCharGPT相談,,,,
@@ -55,19 +55,17 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
             
             // YouTubeのサムネイルURLを生成
             const youtubeId = getYouTubeId(video.url);
+            const thumbnailUrl = `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`;
             
             // プレイリストタグを生成
             const playlistTags = createPlaylistTags(video);
-            
-            // 画像パスを生成
-            const imagePath = `../images/${video.image}.jpg`;
             
             const videoCard = document.createElement('div');
             videoCard.className = 'video-card';
             videoCard.dataset.playlists = getPlaylists(video).join(',');
             videoCard.innerHTML = `
                 <a href="${video.url}" target="_blank" class="video-thumbnail">
-                    <img src="${imagePath}" alt="${video.title}" onerror="this.src='https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg'">
+                    <img src="${thumbnailUrl}" alt="${video.title}">
                     <div class="video-play-button">
                         <i class="fas fa-play"></i>
                     </div>
