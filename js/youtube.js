@@ -1,4 +1,38 @@
+// 現在の日付をYYYYMMDD形式で取得する関数
+function getCurrentDateString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    // 月と日は2桁に揃える（1→01, 12→12）
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
+}
+
+// 日付をフォーマットする関数
+function formatDate(dateStr) {
+    if (!dateStr || dateStr.length !== 8) return '';
+    
+    const year = dateStr.substring(0, 4);
+    const month = dateStr.substring(4, 6);
+    const day = dateStr.substring(6, 8);
+    
+    return `${year}/${month}/${day}`;
+}
+
+// YouTubeのURLからビデオIDを抽出する関数
+function getYouTubeId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+// メインの処理を開始
 document.addEventListener('DOMContentLoaded', function() {
+    // ページネーション設定
+    const VIDEOS_PER_PAGE = 30; // テスト用に10動画/ページ（本番では30に変更）
+    let currentPage = 1;
+    let filteredVideos = []; // フィルタリング後の動画リスト
+    
     // CSVデータのURL
     // Google Spreadsheetを公開してCSVとして取得するURL
     // 注意: pubhtmlではなく、/pub?output=csvが必要
@@ -37,20 +71,54 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
     function displayVideos(data) {
         const container = document.getElementById('video-container');
         // ローディング表示を削除
-        container.querySelector('.loading').remove();
+        const loadingElement = container.querySelector('.loading');
+        if (loadingElement) {
+            loadingElement.remove();
+        }
         
-        // publishedがtrueの動画のみ表示
-        const publishedVideos = data.filter(video => video.published === 'TRUE');
+        // 現在の日付を取得
+        const currentDateString = getCurrentDateString();
         
-        if (publishedVideos.length === 0) {
+        // publishedがtrueで、かつ日付が現在日より前または同日の動画のみ表示
+        filteredVideos = data.filter(video => 
+            video.published === 'TRUE' && 
+            video.date <= currentDateString
+        );
+        
+        if (filteredVideos.length === 0) {
             container.innerHTML = '<p class="no-videos">表示できる動画がありません。</p>';
+            updatePaginationInfo(0, 0);
             return;
         }
         
         // 日付の降順にソート
-        publishedVideos.sort((a, b) => b.date.localeCompare(a.date));
+        filteredVideos.sort((a, b) => b.date.localeCompare(a.date));
         
-        publishedVideos.forEach(video => {
+        // ページネーションを設定
+        setupPagination(filteredVideos);
+        
+        // 最初のページを表示
+        showPage(1);
+    }
+    
+    // 指定したページの動画を表示
+    function showPage(page) {
+        const container = document.getElementById('video-container');
+        // 現在のページを記憶
+        currentPage = page;
+        
+        // 動画コンテナをクリア（ページネーション以外）
+        container.innerHTML = '';
+        
+        // ページに表示する動画の範囲を計算
+        const startIndex = (page - 1) * VIDEOS_PER_PAGE;
+        const endIndex = Math.min(startIndex + VIDEOS_PER_PAGE, filteredVideos.length);
+        
+        // 表示する動画を選択
+        const videosToShow = filteredVideos.slice(startIndex, endIndex);
+        
+        // 動画を表示
+        videosToShow.forEach(video => {
             // 日付をフォーマット
             const dateStr = formatDate(video.date);
             
@@ -99,12 +167,149 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
             
             container.appendChild(videoCard);
         });
+        
+        // ページネーション情報の更新
+        updatePaginationInfo(filteredVideos.length, currentPage);
+        
+        // ページネーションUIの更新
+        updatePaginationUI(currentPage);
+    }
+    
+    // ページネーションを設定する関数
+    function setupPagination(videos) {
+        const totalPages = Math.ceil(videos.length / VIDEOS_PER_PAGE);
+        const paginationElement = document.getElementById('pagination');
+        
+        // ページネーション要素をクリア
+        paginationElement.innerHTML = '';
+        
+        // 「前へ」ボタン
+        const prevButton = document.createElement('button');
+        prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> 前へ';
+        prevButton.classList.add('prev-button');
+        prevButton.disabled = currentPage === 1;
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
+        });
+        paginationElement.appendChild(prevButton);
+        
+        // ページ番号ボタン
+        const maxDisplayedPages = 5; // 表示するページボタンの最大数
+        
+        let startPage = Math.max(1, currentPage - Math.floor(maxDisplayedPages / 2));
+        let endPage = Math.min(totalPages, startPage + maxDisplayedPages - 1);
+        
+        // 表示範囲を調整
+        if (endPage - startPage + 1 < maxDisplayedPages && startPage > 1) {
+            startPage = Math.max(1, endPage - maxDisplayedPages + 1);
+        }
+        
+        // 最初のページへのボタン（必要な場合）
+        if (startPage > 1) {
+            const firstPageButton = document.createElement('button');
+            firstPageButton.textContent = '1';
+            firstPageButton.addEventListener('click', () => showPage(1));
+            paginationElement.appendChild(firstPageButton);
+            
+            if (startPage > 2) {
+                const ellipsis = document.createElement('button');
+                ellipsis.textContent = '...';
+                ellipsis.disabled = true;
+                paginationElement.appendChild(ellipsis);
+            }
+        }
+        
+        // ページ番号ボタン
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            
+            pageButton.addEventListener('click', () => showPage(i));
+            paginationElement.appendChild(pageButton);
+        }
+        
+        // 最後のページへのボタン（必要な場合）
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const ellipsis = document.createElement('button');
+                ellipsis.textContent = '...';
+                ellipsis.disabled = true;
+                paginationElement.appendChild(ellipsis);
+            }
+            
+            const lastPageButton = document.createElement('button');
+            lastPageButton.textContent = totalPages;
+            lastPageButton.addEventListener('click', () => showPage(totalPages));
+            paginationElement.appendChild(lastPageButton);
+        }
+        
+        // 「次へ」ボタン
+        const nextButton = document.createElement('button');
+        nextButton.innerHTML = '次へ <i class="fas fa-chevron-right"></i>';
+        nextButton.classList.add('next-button');
+        nextButton.disabled = currentPage === totalPages || totalPages === 0;
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
+        });
+        paginationElement.appendChild(nextButton);
+    }
+    
+    // ページネーションUIを更新する関数
+    function updatePaginationUI(currentPage) {
+        const paginationElement = document.getElementById('pagination');
+        const totalPages = Math.ceil(filteredVideos.length / VIDEOS_PER_PAGE);
+        
+        // 「前へ」ボタンの状態を更新
+        const prevButton = paginationElement.querySelector('.prev-button');
+        if (prevButton) {
+            prevButton.disabled = currentPage === 1 || totalPages === 0;
+        }
+        
+        // ページ番号ボタンの状態を更新
+        const pageButtons = paginationElement.querySelectorAll('button:not(.prev-button):not(.next-button)');
+        pageButtons.forEach(button => {
+            if (!button.textContent.includes('...')) {
+                button.classList.toggle('active', parseInt(button.textContent) === currentPage);
+            }
+        });
+        
+        // 「次へ」ボタンの状態を更新
+        const nextButton = paginationElement.querySelector('.next-button');
+        if (nextButton) {
+            nextButton.disabled = currentPage === totalPages || totalPages === 0;
+        }
+    }
+    
+    // ページネーション情報を更新する関数
+    function updatePaginationInfo(totalVideos, currentPage) {
+        const pageInfoElement = document.getElementById('page-info');
+        const totalPages = Math.ceil(totalVideos / VIDEOS_PER_PAGE);
+        
+        if (pageInfoElement) {
+            pageInfoElement.textContent = `${totalVideos}件の動画 / ページ: ${currentPage}/${totalPages || 1}`;
+        }
     }
 
     // プレイリストでフィルターするためのセットアップ
     function setupFilters(data) {
         const filterSelect = document.getElementById('playlist-filter');
-        const publishedVideos = data.filter(video => video.published === 'TRUE');
+        
+        // 現在の日付を取得
+        const currentDateString = getCurrentDateString();
+        
+        // publishedがtrueで、かつ現在日付以前の動画のみフィルタリング
+        const publishedVideos = data.filter(video => 
+            video.published === 'TRUE' && 
+            video.date <= currentDateString
+        );
         
         // すべてのプレイリストを収集
         const allPlaylists = new Set();
@@ -125,15 +330,26 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
         // フィルターの変更イベントをリッスン
         filterSelect.addEventListener('change', function() {
             const selectedPlaylist = this.value;
-            const videoCards = document.querySelectorAll('.video-card');
             
-            videoCards.forEach(card => {
-                if (selectedPlaylist === 'all' || card.dataset.playlists.includes(selectedPlaylist)) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+            // プレイリストに基づいて動画をフィルタリング
+            if (selectedPlaylist === 'all') {
+                // すべての動画を表示（日付フィルター済み）
+                filteredVideos = publishedVideos;
+            } else {
+                // 選択されたプレイリストの動画のみ表示
+                filteredVideos = publishedVideos.filter(video => 
+                    getPlaylists(video).includes(selectedPlaylist)
+                );
+            }
+            
+            // ソート
+            filteredVideos.sort((a, b) => b.date.localeCompare(a.date));
+            
+            // ページネーションを再設定
+            setupPagination(filteredVideos);
+            
+            // 最初のページを表示
+            showPage(1);
         });
     }
 
@@ -148,24 +364,6 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
         return playlists.map(playlist => 
             `<span class="video-playlist">${playlist}</span>`
         ).join('');
-    }
-
-    // YouTubeのURLからビデオIDを抽出する関数
-    function getYouTubeId(url) {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
-    }
-
-    // 日付をフォーマットする関数
-    function formatDate(dateStr) {
-        if (!dateStr || dateStr.length !== 8) return '';
-        
-        const year = dateStr.substring(0, 4);
-        const month = dateStr.substring(4, 6);
-        const day = dateStr.substring(6, 8);
-        
-        return `${year}/${month}/${day}`;
     }
 
     // テスト用データを処理（コメントアウト）

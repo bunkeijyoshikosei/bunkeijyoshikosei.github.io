@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文系女子高生 × 生成AI</title>
+    <title>YouTube動画一覧 - 文系女子高生 × 生成AI</title>
     <link rel="stylesheet" href="../css/style.css">
-    <!-- faviconの設定 -->
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <!-- Google Fontsの追加 -->
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- Font Awesomeの追加 -->
@@ -41,6 +39,9 @@
                         <option value="all">すべて表示</option>
                         <!-- プレイリストはJavaScriptで動的に追加されます -->
                     </select>
+                    <div class="date-filter-info">
+                        <p><i class="fas fa-info-circle"></i> 現在の日付: <span id="current-date"></span> 以前の動画のみ表示されます</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -53,6 +54,16 @@
                         <p>動画データを読み込み中...<i class="fas fa-spinner fa-spin"></i></p>
                     </div>
                 </div>
+                
+                <!-- ページネーション -->
+                <div class="pagination-container">
+                    <div class="pagination" id="pagination">
+                        <!-- ページネーションはJavaScriptで動的に生成されます -->
+                    </div>
+                    <div class="pagination-info">
+                        <span id="page-info">0件の動画 / ページ: 0/0</span>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -62,7 +73,7 @@
             <p>&copy; 2025 文系女子高生 × 生成AI. All Rights Reserved.</p>
             <div class="social">
                 <a href="https://www.youtube.com/@文系女子高生" target="_blank"><i class="fab fa-youtube"></i></a>
-                <a href="https://x.com/MiSRMzOs7792278" target="_blank"><i class="fab fa-twitter"></i></a>
+                <a href="https://x.com/MiSRMzOs7792278" target="_blank"><i class="fab fa-x"></i></a>
                 <a href="https://instagram.com/bunkeijyoshikosei" target="_blank"><i class="fab fa-instagram"></i></a>
             </div>
         </div>
@@ -74,6 +85,14 @@
     <script>
         // 高度なサムネイルフォールバック処理
         document.addEventListener('DOMContentLoaded', function() {
+            // 現在の日付を表示
+            const currentDateElement = document.getElementById('current-date');
+            if (currentDateElement) {
+                const now = new Date();
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                currentDateElement.textContent = now.toLocaleDateString('ja-JP', options);
+            }
+            
             // サムネイルの読み込み状態をチェックする関数
             function checkThumbnails() {
                 const thumbnails = document.querySelectorAll('.thumbnail-img');
