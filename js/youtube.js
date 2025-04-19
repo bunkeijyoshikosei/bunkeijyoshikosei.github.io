@@ -29,7 +29,7 @@ function getYouTubeId(url) {
 // メインの処理を開始
 document.addEventListener('DOMContentLoaded', function() {
     // ページネーション設定
-    const VIDEOS_PER_PAGE = 30; // テスト用に10動画/ページ（本番では30に変更）
+    const VIDEOS_PER_PAGE = 10; // テスト用に10動画/ページ（本番では30に変更）
     let currentPage = 1;
     let filteredVideos = []; // フィルタリング後の動画リスト
     
@@ -80,10 +80,15 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
         const currentDateString = getCurrentDateString();
         
         // publishedがtrueで、かつ日付が現在日より前または同日の動画のみ表示
-        filteredVideos = data.filter(video => 
-            video.published === 'TRUE' && 
-            video.date <= currentDateString
-        );
+        filteredVideos = data.filter(video => {
+            // 大文字小文字を区別せずに比較し、複数のフォーマットに対応
+            const isPublished = 
+                video.published === 'true' || 
+                video.published === 'TRUE' ||
+                video.published === true;
+            
+            return isPublished && video.date <= currentDateString;
+        });
         
         if (filteredVideos.length === 0) {
             container.innerHTML = '<p class="no-videos">表示できる動画がありません。</p>';
@@ -306,10 +311,15 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
         const currentDateString = getCurrentDateString();
         
         // publishedがtrueで、かつ現在日付以前の動画のみフィルタリング
-        const publishedVideos = data.filter(video => 
-            video.published === 'TRUE' && 
-            video.date <= currentDateString
-        );
+        const publishedVideos = data.filter(video => {
+            // 大文字小文字を区別せずに比較し、複数のフォーマットに対応
+            const isPublished = 
+                video.published === 'true' || 
+                video.published === 'TRUE' ||
+                video.published === true;
+            
+            return isPublished && video.date <= currentDateString;
+        });
         
         // すべてのプレイリストを収集
         const allPlaylists = new Set();
