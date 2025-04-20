@@ -133,14 +133,25 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
             // サムネイル画像のプレースホルダー（動画ID+タイトル文字列から生成する代替画像）
             const placeholderUrl = `https://placehold.co/480x360/333333/FFFFFF?text=${encodeURIComponent(youtubeId)}`;
             
+            // iOSデバイス向けに最適化されたサムネイルURLを選択
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            
             // バックアップサムネイルを設定（複数の選択肢）
             const thumbnailSources = [
-                `https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`,
-                `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
+                `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`,
+                `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
                 `https://i.ytimg.com/vi/${youtubeId}/sddefault.jpg`,
+                `https://img.youtube.com/vi/${youtubeId}/sddefault.jpg`,
+                `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
+                `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`,
+                `https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`,
                 `https://img.youtube.com/vi/${youtubeId}/0.jpg`,
                 placeholderUrl
             ];
+            
+            // iOSデバイス向けに最適なサムネイル形式を優先
+            const preferredIndex = isIOS ? 
+                (thumbnailSources.findIndex(src => src.includes('hqdefault')) || 0) : 0;
             
             // プレイリストタグを生成
             const playlistTags = createPlaylistTags(video);
@@ -150,11 +161,13 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
             videoCard.dataset.playlists = getPlaylists(video).join(',');
             videoCard.innerHTML = `
                 <a href="${video.url}" target="_blank" class="video-thumbnail">
-                    <img src="${thumbnailSources[0]}" 
+                    <img src="${thumbnailSources[preferredIndex]}" 
                          alt="${video.title}" 
                          class="thumbnail-img"
                          data-sources="${thumbnailSources.join(',')}"
-                         data-current-index="0">
+                         data-current-index="${preferredIndex}"
+                         style="z-index:2; position:relative; transform:translateZ(0); -webkit-transform:translateZ(0); backface-visibility:hidden; -webkit-backface-visibility:hidden;"
+                         onerror="if(this.dataset.currentIndex < 8) { this.dataset.currentIndex++; this.src=this.dataset.sources.split(',')[parseInt(this.dataset.currentIndex)+1]; }">
                     <div class="video-play-button">
                         <i class="fas fa-play"></i>
                     </div>
@@ -178,6 +191,20 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
         
         // ページネーションUIの更新
         updatePaginationUI(currentPage);
+        
+        // iOS向けのサムネイル表示修正を適用
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent) || /^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+            setTimeout(function() {
+                const thumbnails = document.querySelectorAll('.thumbnail-img');
+                thumbnails.forEach(img => {
+                    // 3D変換を適用してレンダリングレイヤーを分離
+                    img.style.transform = "translateZ(0)";
+                    img.style.webkitTransform = "translateZ(0)";
+                    img.style.backfaceVisibility = "hidden";
+                    img.style.webkitBackfaceVisibility = "hidden";
+                });
+            }, 100);
+        }
     }
     
     // ページネーションを設定する関数
@@ -376,14 +403,61 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
         ).join('');
     }
 
-    // テスト用データを処理（コメントアウト）
-    // processCSV(testData);
-    
+    // サムネイル画像の読み込みを改善するための関数
+    function applySafariImageFix() {
+        // iOSのSafari検出
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        
+        if (isIOS || isSafari) {
+            console.log('iOS/Safariデバイスを検出しました。サムネイル修正を適用します。');
+            
+            // すべてのサムネイル画像を対象に処理
+            const thumbnails = document.querySelectorAll('.thumbnail-img');
+            
+            thumbnails.forEach(img => {
+                // iOSでより確実に動作する形式にURLを調整
+                let currentSrc = img.src;
+                if (currentSrc.includes('maxresdefault') || currentSrc.includes('sddefault')) {
+                    // hqdefaultはiOSでの表示確率が高い
+                    let newSrc = currentSrc.replace(/maxresdefault|sddefault/, 'hqdefault');
+                    img.src = newSrc;
+                }
+                
+                // style属性を追加してiOS固有の問題を修正
+                img.style.webkitTransform = 'translateZ(0)';
+                img.style.transform = 'translateZ(0)';
+                img.style.backfaceVisibility = 'hidden';
+                img.style.webkitBackfaceVisibility = 'hidden';
+                
+                // 読み込みエラー時のフォールバック処理
+                img.onerror = function() {
+                    console.log('画像読み込みエラー:', this.src);
+                    // hqdefaultに切り替える
+                    if (!this.src.includes('hqdefault')) {
+                        this.src = this.src.replace(/maxresdefault|sddefault|mqdefault|default/, 'hqdefault');
+                    }
+                    // それでもダメならデフォルト画像
+                    else if (!this.src.includes('default.jpg')) {
+                        const matches = this.src.match(/\/([a-zA-Z0-9_-]{11})\//);
+                        if (matches && matches[1]) {
+                            const youtubeId = matches[1];
+                            this.src = `https://img.youtube.com/vi/${youtubeId}/0.jpg`;
+                        }
+                    }
+                };
+                
+                // フォースリロード
+                img.setAttribute('loading', 'eager');
+            });
+        }
+    }
+
     // Google Spreadsheetを使用
     fetch(csvUrl)
         .then(response => {
             console.log('Response status:', response.status);
-            return response.text(); // ここでreturnが必要
+            return response.text();
         })
         .then(text => {
             console.log('CSV data received, length:', text.length);
@@ -396,4 +470,9 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
             console.log('フォールバック: テストデータを使用します');
             processCSV(testData);
         });
+        
+    // ページ読み込み後、一定間隔でサムネイルをチェック
+    setTimeout(applySafariImageFix, 500);
+    setTimeout(applySafariImageFix, 1500);
+    setTimeout(applySafariImageFix, 3000);
 });
