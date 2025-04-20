@@ -39,6 +39,15 @@
                         <option value="all">すべて表示</option>
                         <!-- プレイリストはJavaScriptで動的に追加されます -->
                     </select>
+                    
+                    <label for="items-per-page">表示件数:</label>
+                    <select id="items-per-page">
+                        <option value="10">10件</option>
+                        <option value="25">25件</option>
+                        <option value="50">50件</option>
+                        <option value="100">100件</option>
+                    </select>
+                    
                     <div class="date-filter-info">
                         <p><i class="fas fa-info-circle"></i> 現在の日付: <span id="current-date"></span> 以前の動画のみ表示されます</p>
                     </div>

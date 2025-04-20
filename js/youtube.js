@@ -29,7 +29,7 @@ function getYouTubeId(url) {
 // メインの処理を開始
 document.addEventListener('DOMContentLoaded', function() {
     // ページネーション設定
-    const VIDEOS_PER_PAGE = 10; // テスト用に10動画/ページ（本番では30に変更）
+    let VIDEOS_PER_PAGE = 10; // デフォルトは10動画/ページ
     let currentPage = 1;
     let filteredVideos = []; // フィルタリング後の動画リスト
     
@@ -451,6 +451,23 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
                 img.setAttribute('loading', 'eager');
             });
         }
+    }
+
+    // 表示件数の変更イベントをリッスン
+    const itemsPerPageSelect = document.getElementById('items-per-page');
+    if (itemsPerPageSelect) {
+        itemsPerPageSelect.addEventListener('change', function() {
+            VIDEOS_PER_PAGE = parseInt(this.value, 10);
+            console.log(`表示件数を${VIDEOS_PER_PAGE}件に変更しました`);
+            
+            // フィルタリング済みの動画リストがある場合は再表示
+            if (filteredVideos.length > 0) {
+                // ページネーションを再設定
+                setupPagination(filteredVideos);
+                // 最初のページを表示
+                showPage(1);
+            }
+        });
     }
 
     // Google Spreadsheetを使用
