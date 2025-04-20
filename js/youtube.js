@@ -1,3 +1,5 @@
+import config from './config.js';
+
 // 現在の日付をYYYYMMDD形式で取得する関数
 function getCurrentDateString() {
     const now = new Date();
@@ -47,9 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // config.jsからAPIキーを読み込む
     let API_KEY = '';
     try {
-        const config = window.config || {};
         API_KEY = config.youtubeApiKey || '';
-        console.log('API_KEY:', API_KEY);
+        // console.log('API_KEY:', API_KEY);
     } catch (e) {
         console.error('設定ファイルの読み込みに失敗しました:', e);
     }
@@ -59,18 +60,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // 注意: pubhtmlではなく、/pub?output=csvが必要
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIHlNKRZGlEO27QAiMDSx1PF99gQ47shvjWtPia3HA2rxabhiISilyR4_NvHh-ojOAofR3MIhUNMzo/pub?output=csv';
     
-    // テスト用のデータ（実際の実装では削除または置き換える）
-    const testData = `title,published,url,date,image,play_list1,play_list2,play_list3,,memo
-ChatGPTに痩せる方法聞いてみた,true,https://youtu.be/SvB5e4zzBRY,20250407,ダイエット,文系女子高生のCharGPT相談,,,,チャンネル作成
-ChatGPTに人間の仕事を奪うつもりか聞いてみた,true,https://youtu.be/0nFS0AtBkXo,20250408,仕事相談,文系女子高生のCharGPT相談,,,,
-金欠Kが格安コーデを相談する,true,https://youtu.be/RsR9WJf0h-Q,20250409,ディズニーコーデ,文系女子高生のCharGPT相談,,,,
-数学、マジ分からんのでChatGPTに勉強法聞いてみた,true,https://youtu.be/ArT3yZ-x5X0,20250410,数学入門,文系女子高生のCharGPT相談,,,,
-雨の日に傘を忘れた。自分を全肯定してくれるAIに泣きついてみた,true,https://youtu.be/wMKNKx1HId8,20250411,雨の日の相談,文系女子高生のCharGPT相談,,,,
-AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwkWaTbEOY,20250412,宿題,文系女子高生のCharGPT相談,,,,
-文系？理系？どっちも好きなんだけど,true,https://youtu.be/zXZ8Khom_Zk,20250413,文系理系,文系女子高生のCharGPT相談,,,,
-学校だるい。理由なく休みたい。どう言い訳すれば？,true,https://youtu.be/-G5yF8ZCMe0,20250414,学校休みたい,文系女子高生のCharGPT相談,,,,
-タイトル,false,https://youtu.be/SvB5e4zzBRY,20250415,none,文系女子高生のCharGPT相談,,,,
-タイトル,false,https://youtu.be/SvB5e4zzBRY,20250416,none,文系女子高生のCharGPT相談,,,,`;
+//     // テスト用のデータ（実際の実装では削除または置き換える）
+//     const testData = `title,published,url,date,image,play_list1,play_list2,play_list3,,memo
+// ChatGPTに痩せる方法聞いてみた,true,https://youtu.be/SvB5e4zzBRY,20250407,ダイエット,文系女子高生のCharGPT相談,,,,チャンネル作成
+// ChatGPTに人間の仕事を奪うつもりか聞いてみた,true,https://youtu.be/0nFS0AtBkXo,20250408,仕事相談,文系女子高生のCharGPT相談,,,,
+// 金欠Kが格安コーデを相談する,true,https://youtu.be/RsR9WJf0h-Q,20250409,ディズニーコーデ,文系女子高生のCharGPT相談,,,,
+// 数学、マジ分からんのでChatGPTに勉強法聞いてみた,true,https://youtu.be/ArT3yZ-x5X0,20250410,数学入門,文系女子高生のCharGPT相談,,,,
+// 雨の日に傘を忘れた。自分を全肯定してくれるAIに泣きついてみた,true,https://youtu.be/wMKNKx1HId8,20250411,雨の日の相談,文系女子高生のCharGPT相談,,,,
+// AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwkWaTbEOY,20250412,宿題,文系女子高生のCharGPT相談,,,,
+// 文系？理系？どっちも好きなんだけど,true,https://youtu.be/zXZ8Khom_Zk,20250413,文系理系,文系女子高生のCharGPT相談,,,,
+// 学校だるい。理由なく休みたい。どう言い訳すれば？,true,https://youtu.be/-G5yF8ZCMe0,20250414,学校休みたい,文系女子高生のCharGPT相談,,,,
+// タイトル,false,https://youtu.be/SvB5e4zzBRY,20250415,none,文系女子高生のCharGPT相談,,,,
+// タイトル,false,https://youtu.be/SvB5e4zzBRY,20250416,none,文系女子高生のCharGPT相談,,,,`;
 
     // CSVを解析して動画を表示する関数
     function processCSV(csvText) {
@@ -244,18 +245,18 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
    function fetchVideoStats(videoId, videoCard) {
      const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${API_KEY}`;
      
-     console.log('リクエストURL:', apiUrl);
+    //  console.log('リクエストURL:', apiUrl);
      
      fetch(apiUrl)
        .then(response => {
-         console.log('レスポンスステータス:', response.status);
+        //  console.log('レスポンスステータス:', response.status);
          if (!response.ok) {
            throw new Error(`HTTP error! status: ${response.status}`);
          }
          return response.json();
        })
        .then(data => {
-         console.log('レスポンスデータ:', data);
+        //  console.log('レスポンスデータ:', data);
          
          if (data.error) {
            console.error('APIエラー:', data.error);
