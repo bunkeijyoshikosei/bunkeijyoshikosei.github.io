@@ -26,6 +26,16 @@ function getYouTubeId(url) {
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
+// 数値をフォーマットする関数（例: 1000 → 1K, 1000000 → 1M）
+function formatNumber(num) {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+}
+
 // メインの処理を開始
 document.addEventListener('DOMContentLoaded', function() {
     // ページネーション設定
@@ -33,6 +43,17 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let filteredVideos = []; // フィルタリング後の動画リスト
     
+    // YouTube Data APIのキー
+    // config.jsからAPIキーを読み込む
+    let API_KEY = '';
+    try {
+        const config = window.config || {};
+        API_KEY = config.youtubeApiKey || '';
+        console.log('API_KEY:', API_KEY);
+    } catch (e) {
+        console.error('設定ファイルの読み込みに失敗しました:', e);
+    }
+
     // CSVデータのURL
     // Google Spreadsheetを公開してCSVとして取得するURL
     // 注意: pubhtmlではなく、/pub?output=csvが必要
@@ -159,6 +180,9 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
             const videoCard = document.createElement('div');
             videoCard.className = 'video-card';
             videoCard.dataset.playlists = getPlaylists(video).join(',');
+            videoCard.dataset.videoId = youtubeId; // ビデオIDを保存
+            
+            // 動画カードのHTMLを生成（統計情報のプレースホルダーを含む）
             videoCard.innerHTML = `
                 <a href="${video.url}" target="_blank" class="video-thumbnail">
                     <img src="${thumbnailSources[preferredIndex]}" 
@@ -176,6 +200,10 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
                     <h3 class="video-title">${video.title}</h3>
                     <div class="video-meta">
                         <span class="video-date">公開日: ${dateStr}</span>
+                        <div class="video-stats">
+                            <span class="video-views"><i class="fas fa-eye"></i> <span class="stats-value">読み込み中...</span></span>
+                            <span class="video-likes"><i class="fas fa-thumbs-up"></i> <span class="stats-value">読み込み中...</span></span>
+                        </div>
                     </div>
                     <div class="video-playlists">
                         ${playlistTags}
@@ -184,6 +212,11 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
             `;
             
             container.appendChild(videoCard);
+            
+            // 動画の統計情報を取得
+            if (youtubeId && API_KEY) {
+                fetchVideoStats(youtubeId, videoCard);
+            }
         });
         
         // ページネーション情報の更新
@@ -205,6 +238,36 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
                 });
             }, 100);
         }
+    }
+    
+    // YouTube Data APIを使用して動画の統計情報を取得する関数
+    function fetchVideoStats(videoId, videoCard) {
+        const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${API_KEY}`;
+        
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.items && data.items.length > 0) {
+                    const stats = data.items[0].statistics;
+                    const views = stats.viewCount || 0;
+                    const likes = stats.likeCount || 0;
+                    
+                    // 統計情報を表示
+                    const viewsElement = videoCard.querySelector('.video-views .stats-value');
+                    const likesElement = videoCard.querySelector('.video-likes .stats-value');
+                    
+                    if (viewsElement) viewsElement.textContent = formatNumber(views);
+                    if (likesElement) likesElement.textContent = formatNumber(likes);
+                }
+            })
+            .catch(error => {
+                console.error('統計情報の取得に失敗しました:', error);
+                // エラー時は「取得できません」と表示
+                const statsElements = videoCard.querySelectorAll('.stats-value');
+                statsElements.forEach(el => {
+                    el.textContent = '取得できません';
+                });
+            });
     }
     
     // ページネーションを設定する関数
