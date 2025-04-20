@@ -3,21 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="文系女子高生が生成AIに挑戦する動画シリーズの一覧ページです。">
     <title>YouTube動画一覧 - 文系女子高生 × 生成AI</title>
     <link rel="stylesheet" href="../css/style.css">
     <!-- Google Fontsの追加 -->
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- Font Awesomeの追加 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- プリロード -->
+    <link rel="preload" href="../js/youtube.js" as="script">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js" as="script">
 </head>
 <body>
     <header>
         <div class="container">
             <h1>文系女子高生 × 生成AI</h1>
-            <nav>
+            <nav aria-label="メインナビゲーション">
                 <ul>
                     <li><a href="../index.html">ホーム</a></li>
-                    <li><a href="index.html" class="active">YouTube動画</a></li>
+                    <li><a href="index.html" class="active" aria-current="page">YouTube動画</a></li>
                 </ul>
             </nav>
         </div>
@@ -31,46 +35,50 @@
             </div>
         </section>
 
-        <section class="filters">
+        <section class="filters" aria-label="フィルター">
             <div class="container">
                 <div class="filter-container">
-                    <label for="playlist-filter">プレイリストでフィルター:</label>
-                    <select id="playlist-filter">
-                        <option value="all">すべて表示</option>
-                        <!-- プレイリストはJavaScriptで動的に追加されます -->
-                    </select>
+                    <div class="filter-group">
+                        <label for="playlist-filter">プレイリストでフィルター:</label>
+                        <select id="playlist-filter" aria-label="プレイリストでフィルター">
+                            <option value="all">すべて表示</option>
+                            <!-- プレイリストはJavaScriptで動的に追加されます -->
+                        </select>
+                    </div>
                     
-                    <label for="items-per-page">表示件数:</label>
-                    <select id="items-per-page">
-                        <option value="10">10件</option>
-                        <option value="25">25件</option>
-                        <option value="50">50件</option>
-                        <option value="100">100件</option>
-                    </select>
+                    <div class="filter-group">
+                        <label for="items-per-page">表示件数:</label>
+                        <select id="items-per-page" aria-label="表示件数">
+                            <option value="10">10件</option>
+                            <option value="25">25件</option>
+                            <option value="50">50件</option>
+                            <option value="100">100件</option>
+                        </select>
+                    </div>
                     
                     <div class="date-filter-info">
-                        <p><i class="fas fa-info-circle"></i> 現在の日付: <span id="current-date"></span> 以前の動画のみ表示されます</p>
+                        <p><i class="fas fa-info-circle" aria-hidden="true"></i> 現在の日付: <span id="current-date"></span> 以前の動画のみ表示されます</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="videos">
+        <section class="videos" aria-label="動画一覧">
             <div class="container">
                 <div id="video-container" class="video-grid">
                     <!-- 動画はJavaScriptで動的に追加されます -->
-                    <div class="loading">
-                        <p>動画データを読み込み中...<i class="fas fa-spinner fa-spin"></i></p>
+                    <div class="loading" aria-live="polite">
+                        <p>動画データを読み込み中...<i class="fas fa-spinner fa-spin" aria-hidden="true"></i></p>
                     </div>
                 </div>
                 
                 <!-- ページネーション -->
                 <div class="pagination-container">
-                    <div class="pagination" id="pagination">
+                    <nav class="pagination" id="pagination" aria-label="ページネーション">
                         <!-- ページネーションはJavaScriptで動的に生成されます -->
-                    </div>
+                    </nav>
                     <div class="pagination-info">
-                        <span id="page-info">0件の動画 / ページ: 0/0</span>
+                        <span id="page-info" aria-live="polite">0件の動画 / ページ: 0/0</span>
                     </div>
                 </div>
             </div>
@@ -80,108 +88,17 @@
     <footer>
         <div class="container">
             <p>&copy; 2025 文系女子高生 × 生成AI. All Rights Reserved.</p>
-            <div class="social">
-                <a href="https://www.youtube.com/@文系女子高生" target="_blank"><i class="fab fa-youtube"></i></a>
-                <a href="https://x.com/MiSRMzOs7792278" target="_blank"><i class="fab fa-x"></i></a>
-                <a href="https://instagram.com/bunkeijyoshikosei" target="_blank"><i class="fab fa-instagram"></i></a>
+            <div class="social" aria-label="ソーシャルメディアリンク">
+                <a href="https://www.youtube.com/@文系女子高生" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube" aria-hidden="true"></i></a>
+                <a href="https://x.com/MiSRMzOs7792278" target="_blank" rel="noopener noreferrer" aria-label="X"><i class="fab fa-x" aria-hidden="true"></i></a>
+                <a href="https://instagram.com/bunkeijyoshikosei" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
             </div>
         </div>
     </footer>
 
     <!-- Google Sheets APIを読み込み -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script type="module" src="../js/youtube.js"></script>
-    <script>
-        // 高度なサムネイルフォールバック処理
-        document.addEventListener('DOMContentLoaded', function() {
-            // 現在の日付を表示
-            const currentDateElement = document.getElementById('current-date');
-            if (currentDateElement) {
-                const now = new Date();
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                currentDateElement.textContent = now.toLocaleDateString('ja-JP', options);
-            }
-            
-            // サムネイルの読み込み状態をチェックする関数
-            function checkThumbnails() {
-                const thumbnails = document.querySelectorAll('.thumbnail-img');
-                thumbnails.forEach(img => {
-                    // 画像の読み込みに失敗した場合または高さが0の場合
-                    if (img.complete && (img.naturalHeight === 0 || !img.naturalWidth)) {
-                        const sources = img.dataset.sources.split(',');
-                        const currentIndex = parseInt(img.dataset.currentIndex, 10);
-                        
-                        // 次のソースがあれば試す
-                        if (currentIndex < sources.length - 1) {
-                            const nextIndex = currentIndex + 1;
-                            const nextSource = sources[nextIndex];
-                            img.dataset.currentIndex = nextIndex;
-                            img.src = nextSource;
-                            console.log(`サムネイル読み込み失敗。次のソースを試します: ${nextSource}`);
-                        }
-                    }
-                });
-            }
-            
-            // 複数回チェックを実行（タイミングを分散させる）
-            setTimeout(checkThumbnails, 1000);  // 1秒後
-            setTimeout(checkThumbnails, 3000);  // 3秒後
-            setTimeout(checkThumbnails, 6000);  // 6秒後
-            
-            // iOSデバイス検出
-            function isIOSDevice() {
-              return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            }
-            
-            // Safariブラウザ検出
-            function isSafariBrowser() {
-              return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-            }
-            
-            // サムネイルの修正を適用
-            function fixThumbnails() {
-              const thumbnails = document.querySelectorAll('.thumbnail-img');
-              if(thumbnails.length === 0) {
-                // まだサムネイルが読み込まれていない場合は再試行
-                setTimeout(fixThumbnails, 500);
-                return;
-              }
-              
-              console.log('サムネイル修正を適用: ' + thumbnails.length + '件');
-              
-              thumbnails.forEach(img => {
-                // z-indexを強制的に適用
-                img.style.zIndex = "2";
-                img.style.position = "relative";
-                // 3D変換を適用してレンダリングレイヤーを分離
-                img.style.transform = "translateZ(0)";
-                img.style.webkitTransform = "translateZ(0)";
-                img.style.backfaceVisibility = "hidden";
-                img.style.webkitBackfaceVisibility = "hidden";
-                
-                // 読み込みエラー時に別のフォーマットを試す
-                img.onerror = function() {
-                  console.log('画像読み込みエラー: ' + this.src);
-                  if(this.src.includes('maxresdefault')) {
-                    this.src = this.src.replace('maxresdefault', 'hqdefault');
-                  } else if(this.src.includes('sddefault')) {
-                    this.src = this.src.replace('sddefault', 'hqdefault');
-                  } else if(this.src.includes('mqdefault')) {
-                    this.src = this.src.replace('mqdefault', 'default');
-                  }
-                };
-              });
-            }
-            
-            // iOSまたはSafariの場合のみ適用
-            if(isIOSDevice() || isSafariBrowser()) {
-              console.log('iOS/Safariデバイスを検出。サムネイル修正を適用します。');
-              // 複数回チェックを実行
-              setTimeout(fixThumbnails, 500);
-              setTimeout(fixThumbnails, 1500);
-              setTimeout(fixThumbnails, 3000);
-            }
-        });
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js" defer></script>
+    <script type="module" src="../js/youtube.js" defer></script>
+    <script type="module" src="../js/thumbnail-fix.js" defer></script>
 </body>
 </html>
