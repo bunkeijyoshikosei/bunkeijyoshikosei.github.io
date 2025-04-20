@@ -241,34 +241,52 @@ AIに宿題をやらせる方法【禁断の質問】,true,https://youtu.be/3xwk
     }
     
     // YouTube Data APIを使用して動画の統計情報を取得する関数
-    function fetchVideoStats(videoId, videoCard) {
-        const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${API_KEY}`;
-        
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                if (data.items && data.items.length > 0) {
-                    const stats = data.items[0].statistics;
-                    const views = stats.viewCount || 0;
-                    const likes = stats.likeCount || 0;
-                    
-                    // 統計情報を表示
-                    const viewsElement = videoCard.querySelector('.video-views .stats-value');
-                    const likesElement = videoCard.querySelector('.video-likes .stats-value');
-                    
-                    if (viewsElement) viewsElement.textContent = formatNumber(views);
-                    if (likesElement) likesElement.textContent = formatNumber(likes);
-                }
-            })
-            .catch(error => {
-                console.error('統計情報の取得に失敗しました:', error);
-                // エラー時は「取得できません」と表示
-                const statsElements = videoCard.querySelectorAll('.stats-value');
-                statsElements.forEach(el => {
-                    el.textContent = '取得できません';
-                });
-            });
-    }
+   function fetchVideoStats(videoId, videoCard) {
+     const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${API_KEY}`;
+     
+     console.log('リクエストURL:', apiUrl);
+     
+     fetch(apiUrl)
+       .then(response => {
+         console.log('レスポンスステータス:', response.status);
+         if (!response.ok) {
+           throw new Error(`HTTP error! status: ${response.status}`);
+         }
+         return response.json();
+       })
+       .then(data => {
+         console.log('レスポンスデータ:', data);
+         
+         if (data.error) {
+           console.error('APIエラー:', data.error);
+           throw new Error(`API error: ${data.error.message}`);
+         }
+         
+         if (data.items && data.items.length > 0) {
+           const stats = data.items[0].statistics;
+           const views = stats.viewCount || 0;
+           const likes = stats.likeCount || 0;
+           
+           // 統計情報を表示
+           const viewsElement = videoCard.querySelector('.video-views .stats-value');
+           const likesElement = videoCard.querySelector('.video-likes .stats-value');
+           
+           if (viewsElement) viewsElement.textContent = formatNumber(views);
+           if (likesElement) likesElement.textContent = formatNumber(likes);
+         } else {
+           console.error('動画データが見つかりません');
+           throw new Error('動画データが見つかりません');
+         }
+       })
+       .catch(error => {
+         console.error('統計情報の取得に失敗しました:', error);
+         // エラー時は「取得できません」と表示
+         const statsElements = videoCard.querySelectorAll('.stats-value');
+         statsElements.forEach(el => {
+           el.textContent = '取得できません';
+         });
+       });
+   }
     
     // ページネーションを設定する関数
     function setupPagination(videos) {
