@@ -1,4 +1,4 @@
-import config from './config.js';
+// import config from './config.js';
 
 // 現在の日付をYYYYMMDD形式で取得する関数
 function getCurrentDateString() {
@@ -45,16 +45,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let filteredVideos = []; // フィルタリング後の動画リスト
     
-    // YouTube Data APIのキー
-    // config.jsからAPIキーを読み込む
-    let API_KEY = '';
-    try {
-        API_KEY = config.youtubeApiKey || '';
-        // console.log('API_KEY:', API_KEY);
-    } catch (e) {
-        console.error('設定ファイルの読み込みに失敗しました:', e);
-    }
-
+    // 環境に応じたエンドポイントURLを設定
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const NETLIFY_FUNCTION_URL = 'https://netlify-youtube-data-api.netlify.app/.netlify/functions/youtube';
+    // const NETLIFY_FUNCTION_URL = 'http://localhost:8888/.netlify/functions/youtube';
+    
     // CSVデータのURL
     // Google Spreadsheetを公開してCSVとして取得するURL
     // 注意: pubhtmlではなく、/pub?output=csvが必要
@@ -215,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(videoCard);
             
             // 動画の統計情報を取得
-            if (youtubeId && API_KEY) {
+            if (youtubeId) {
                 fetchVideoStats(youtubeId, videoCard);
             }
         });
@@ -243,21 +238,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // YouTube Data APIを使用して動画の統計情報を取得する関数
    function fetchVideoStats(videoId, videoCard) {
-     const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${API_KEY}`;
-     
-    //  console.log('リクエストURL:', apiUrl);
+     const apiUrl = `${NETLIFY_FUNCTION_URL}?videoId=${videoId}`;
      
      fetch(apiUrl)
        .then(response => {
-        //  console.log('レスポンスステータス:', response.status);
          if (!response.ok) {
            throw new Error(`HTTP error! status: ${response.status}`);
          }
          return response.json();
        })
        .then(data => {
-        //  console.log('レスポンスデータ:', data);
-         
          if (data.error) {
            console.error('APIエラー:', data.error);
            throw new Error(`API error: ${data.error.message}`);
