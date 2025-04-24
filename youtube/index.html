@@ -11,8 +11,8 @@
     <!-- Font Awesomeの追加 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- プリロード -->
-    <link rel="preload" href="../js/youtube.js" as="script">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js" as="script">
+    <link rel="preload" href="../js/youtube.js" as="script" crossorigin="anonymous">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js" as="script" crossorigin="anonymous">
 </head>
 <body>
     <header>
@@ -97,8 +97,8 @@
     </footer>
 
     <!-- Google Sheets APIを読み込み -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js" defer></script>
-    <script type="module" src="../js/youtube.js" defer></script>
-    <script type="module" src="../js/thumbnail-fix.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js" crossorigin="anonymous" defer></script>
+    <script type="module" src="../js/youtube.js" crossorigin="anonymous" defer></script>
+    <script type="module" src="../js/thumbnail-fix.js" crossorigin="anonymous" defer></script>
 </body>
 </html>

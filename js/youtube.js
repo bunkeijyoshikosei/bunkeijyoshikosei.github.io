@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
             complete: function (results) {
                 displayVideos(results.data);
                 setupFilters(results.data);
+                updatePagination();
             },
             error: function (error) {
                 console.error('CSV解析エラー:', error);
@@ -153,6 +154,110 @@ document.addEventListener('DOMContentLoaded', function () {
     function createPlaylistTags(video) {
         const playlists = getPlaylists(video);
         return playlists.map(playlist => `<span class="video-playlist">${playlist}</span>`).join('');
+    }
+
+    function setupFilters(data) {
+        const playlistFilter = document.getElementById('playlist-filter');
+        const itemsPerPageSelect = document.getElementById('items-per-page');
+        const currentDateElement = document.getElementById('current-date');
+        
+        // 現在の日付を表示
+        const currentDate = new Date();
+        currentDateElement.textContent = `${currentDate.getFullYear()}/${String(currentDate.getMonth() + 1).padStart(2, '0')}/${String(currentDate.getDate()).padStart(2, '0')}`;
+        
+        // プレイリストの一覧を取得
+        const playlists = new Set();
+        data.forEach(video => {
+            if (video.play_list1) playlists.add(video.play_list1);
+            if (video.play_list2) playlists.add(video.play_list2);
+            if (video.play_list3) playlists.add(video.play_list3);
+        });
+        
+        // プレイリストの選択肢を追加
+        playlists.forEach(playlist => {
+            const option = document.createElement('option');
+            option.value = playlist;
+            option.textContent = playlist;
+            playlistFilter.appendChild(option);
+        });
+        
+        // フィルターの変更イベント
+        playlistFilter.addEventListener('change', () => {
+            const selectedPlaylist = playlistFilter.value;
+            if (selectedPlaylist === 'all') {
+                filteredVideos = data.filter(video => {
+                    const isPublished = video.published === 'true' || video.published === 'TRUE' || video.published === true;
+                    return isPublished && video.date <= getCurrentDateString();
+                });
+            } else {
+                filteredVideos = data.filter(video => {
+                    const isPublished = video.published === 'true' || video.published === 'TRUE' || video.published === true;
+                    const hasPlaylist = video.play_list1 === selectedPlaylist || 
+                                      video.play_list2 === selectedPlaylist || 
+                                      video.play_list3 === selectedPlaylist;
+                    return isPublished && video.date <= getCurrentDateString() && hasPlaylist;
+                });
+            }
+            filteredVideos.sort((a, b) => b.date.localeCompare(a.date));
+            showPage(1);
+            updatePagination();
+        });
+        
+        // 表示件数の変更イベント
+        itemsPerPageSelect.addEventListener('change', () => {
+            VIDEOS_PER_PAGE = parseInt(itemsPerPageSelect.value, 10);
+            showPage(1);
+            updatePagination();
+        });
+    }
+
+    function updatePagination() {
+        const pagination = document.getElementById('pagination');
+        const pageInfo = document.getElementById('page-info');
+        
+        if (!pagination || !pageInfo) return;
+        
+        pagination.innerHTML = '';
+        const totalPages = Math.ceil(filteredVideos.length / VIDEOS_PER_PAGE);
+        
+        // ページ情報の更新
+        pageInfo.textContent = `${filteredVideos.length}件の動画 / ページ: ${currentPage}/${totalPages}`;
+        
+        // 前のページボタン
+        const prevButton = document.createElement('button');
+        prevButton.textContent = '前へ';
+        prevButton.disabled = currentPage === 1;
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+                updatePagination();
+            }
+        });
+        pagination.appendChild(prevButton);
+        
+        // ページ番号ボタン
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.className = currentPage === i ? 'active' : '';
+            pageButton.addEventListener('click', () => {
+                showPage(i);
+                updatePagination();
+            });
+            pagination.appendChild(pageButton);
+        }
+        
+        // 次のページボタン
+        const nextButton = document.createElement('button');
+        nextButton.textContent = '次へ';
+        nextButton.disabled = currentPage === totalPages;
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+                updatePagination();
+            }
+        });
+        pagination.appendChild(nextButton);
     }
 
     fetch(csvUrl)
