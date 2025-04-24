@@ -17,19 +17,11 @@ function displayCurrentDate() {
 function checkThumbnails() {
     const thumbnails = document.querySelectorAll('.thumbnail-img');
     thumbnails.forEach(img => {
-        // 画像の読み込みに失敗した場合または高さが0の場合
+        // 画像の読み込みに失敗した場合
         if (img.complete && (img.naturalHeight === 0 || !img.naturalWidth)) {
-            const sources = img.dataset.sources.split(',');
-            const currentIndex = parseInt(img.dataset.currentIndex, 10);
-            
-            // 次のソースがあれば試す
-            if (currentIndex < sources.length - 1) {
-                const nextIndex = currentIndex + 1;
-                const nextSource = sources[nextIndex];
-                img.dataset.currentIndex = nextIndex;
-                img.src = nextSource;
-                console.log(`サムネイル読み込み失敗。次のソースを試します: ${nextSource}`);
-            }
+            console.log(`サムネイル読み込み失敗: ${img.src}`);
+            // デフォルトのサムネイルを表示
+            img.src = 'https://placehold.co/480x360/333333/FFFFFF?text=No+Thumbnail';
         }
     });
 }

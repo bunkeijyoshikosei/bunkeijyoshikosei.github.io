@@ -94,19 +94,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const youtubeId = getYouTubeId(video.url);
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-            const thumbnailSources = [
-                `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`,
-                `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
-                `https://i.ytimg.com/vi/${youtubeId}/sddefault.jpg`,
-                `https://img.youtube.com/vi/${youtubeId}/sddefault.jpg`,
-                `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
-                `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`,
-                `https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`,
-                `https://img.youtube.com/vi/${youtubeId}/0.jpg`,
-                `https://placehold.co/480x360/333333/FFFFFF?text=${encodeURIComponent(youtubeId)}`
-            ];
+            // Cloudinaryからサムネイルを取得
+            const cloudinaryBaseUrl = 'https://res.cloudinary.com/dv4obntmo/image/upload';
+            const thumbnailUrl = `${cloudinaryBaseUrl}/youtube/bunkeijyoshikosei/${encodeURIComponent(video.title)}/thumbnail.jpg`;
 
-            const preferredIndex = isIOS ? (thumbnailSources.findIndex(src => src.includes('hqdefault')) || 0) : 0;
             const playlistTags = createPlaylistTags(video);
 
             const views = formatNumber(video.viewCount || 0);
@@ -119,11 +110,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             videoCard.innerHTML = `
                 <a href="${video.url}" target="_blank" class="video-thumbnail">
-                    <img src="${thumbnailSources[preferredIndex]}"
+                    <img src="${thumbnailUrl}"
                          alt="${video.title}"
-                         class="thumbnail-img"
-                         data-sources="${thumbnailSources.join(',')}"
-                         data-current-index="${preferredIndex}">
+                         class="thumbnail-img">
                     <div class="video-play-button">
                         <i class="fas fa-play"></i>
                     </div>
