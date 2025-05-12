@@ -80,6 +80,23 @@ document.addEventListener('DOMContentLoaded', function () {
         showPage(1);
     }
 
+    // 特殊文字を処理する関数
+    function convertToFullWidth(str) {
+        // 前後の空白を削除
+        let result = str.trim();
+        
+        // 特殊文字を削除
+        result = result.replace(/[:\/?#[\]@!$&'()*+,;=]/g, '');
+        
+        // スペースをアンダースコアに変換
+        result = result.replace(/\s+/g, '_');
+        
+        // 連続するアンダースコアを1つに
+        result = result.replace(/_+/g, '_');
+        
+        return result;
+    }
+
     function showPage(page) {
         const container = document.getElementById('video-container');
         currentPage = page;
@@ -96,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Cloudinaryからサムネイルを取得
             const cloudinaryBaseUrl = 'https://res.cloudinary.com/dv4obntmo/image/upload';
-            const thumbnailUrl = `${cloudinaryBaseUrl}/youtube/bunkeijyoshikosei/${encodeURIComponent(video.title)}/thumbnail.jpg`;
+            const thumbnailUrl = `${cloudinaryBaseUrl}/youtube/bunkeijyoshikosei/${encodeURIComponent(convertToFullWidth(video.title))}/thumbnail.jpg`;
 
             const playlistTags = createPlaylistTags(video);
 
