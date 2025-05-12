@@ -1,5 +1,16 @@
+function sanitizePathName(title) {
+  // 指定された特殊文字を削除
+  const specialChars = /[:/?#[\]@!$&'()+,;=]/g;
+  return title
+    .replace(specialChars, '')  // 特殊文字を削除
+    .replace(/\s+/g, '_')      // スペースをアンダースコアに変換
+    .replace(/_+/g, '_')       // 連続するアンダースコアを1つに
+    .trim();                   // 前後の空白を削除
+}
+
 function uploadToCloudinary(thumbnailUrl, title) {
-  const folderPath = `youtube/bunkeijyoshikosei/${title}`;
+  const sanitizedTitle = sanitizePathName(title);
+  const folderPath = `youtube/bunkeijyoshikosei/${sanitizedTitle}`;
   
   // 各サイズの画像を個別にアップロード
   const sizes = [
@@ -34,8 +45,8 @@ function uploadToCloudinary(thumbnailUrl, title) {
 }
 
 function checkFolderExists(title) {
-  // タイトルをURLエンコード
-  const encodedTitle = encodeURIComponent(title);
+  const sanitizedTitle = sanitizePathName(title);
+  const encodedTitle = encodeURIComponent(sanitizedTitle);
   const baseUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/youtube/bunkeijyoshikosei/${encodedTitle}/thumbnail_large.jpg`;
   
   const options = {
