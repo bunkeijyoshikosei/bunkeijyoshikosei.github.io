@@ -9,6 +9,30 @@ function getCurrentDateString() {
     return `${year}${month}${day}`;
 }
 
+// 現在の日付と時刻を取得する関数（公開時刻12時と比較用）
+function getCurrentDateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}${month}${day}${hours}${minutes}`;
+}
+
+// ビデオの公開時刻を取得する関数（12時固定）
+function getVideoPublishTime(dateStr) {
+    if (!dateStr || dateStr.length !== 8) return '';
+    return `${dateStr}1200`; // 12時00分を追加
+}
+
+// ビデオが公開済みかどうかを判定する関数
+function isVideoPublished(videoDate) {
+    const currentDateTime = getCurrentDateTime();
+    const videoPublishTime = getVideoPublishTime(videoDate);
+    return videoPublishTime <= currentDateTime;
+}
+
 // 日付をフォーマットする関数
 function formatDate(dateStr) {
     if (!dateStr || dateStr.length !== 8) return '';
@@ -64,11 +88,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const loadingElement = container.querySelector('.loading');
         if (loadingElement) loadingElement.remove();
 
-        const currentDateString = getCurrentDateString();
-
         filteredVideos = data.filter(video => {
             const isPublished = video.published === 'true' || video.published === 'TRUE' || video.published === true;
-            return isPublished && video.date <= currentDateString;
+            return isPublished && isVideoPublished(video.date);
         });
 
         if (filteredVideos.length === 0) {
@@ -193,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (selectedPlaylist === 'all') {
                 filteredVideos = data.filter(video => {
                     const isPublished = video.published === 'true' || video.published === 'TRUE' || video.published === true;
-                    return isPublished && video.date <= getCurrentDateString();
+                    return isPublished && isVideoPublished(video.date);
                 });
             } else {
                 filteredVideos = data.filter(video => {
@@ -201,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const hasPlaylist = video.play_list1 === selectedPlaylist || 
                                       video.play_list2 === selectedPlaylist || 
                                       video.play_list3 === selectedPlaylist;
-                    return isPublished && video.date <= getCurrentDateString() && hasPlaylist;
+                    return isPublished && isVideoPublished(video.date) && hasPlaylist;
                 });
             }
             filteredVideos.sort((a, b) => b.date.localeCompare(a.date));
