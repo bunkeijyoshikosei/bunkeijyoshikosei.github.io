@@ -22,9 +22,48 @@ function getCurrentDateString() {
 
 // ビデオが公開済みかどうかを判定する関数（日付のみ比較）
 function isVideoPublished(videoDate) {
-  if (!videoDate || videoDate.length !== 8) return false;
-  const currentDateString = getCurrentDateString();
-  return videoDate <= currentDateString;
+  console.log(`isVideoPublished呼び出し: videoDate=${videoDate}, 型=${typeof videoDate}`);
+  
+  // videoDateがDateオブジェクトの場合
+  if (videoDate instanceof Date) {
+    const currentDate = new Date();
+    // 日付のみを比較（時刻は無視）
+    const videoDateOnly = new Date(videoDate.getFullYear(), videoDate.getMonth(), videoDate.getDate());
+    const currentDateOnly = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+    const result = videoDateOnly <= currentDateOnly;
+    console.log(`Dateオブジェクト比較: ${videoDateOnly.toISOString()} <= ${currentDateOnly.toISOString()} = ${result}`);
+    return result;
+  }
+  
+  // videoDateが数値の場合（スプレッドシートの日付）
+  if (typeof videoDate === 'number') {
+    // Excelの日付形式（1900年1月1日からの日数）をJavaScriptのDateに変換
+    const excelEpoch = new Date(1900, 0, 1); // 1900年1月1日
+    const dateObj = new Date(excelEpoch.getTime() + (videoDate - 2) * 24 * 60 * 60 * 1000);
+    const currentDate = new Date();
+    // 日付のみを比較（時刻は無視）
+    const videoDateOnly = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+    const currentDateOnly = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+    const result = videoDateOnly <= currentDateOnly;
+    console.log(`数値比較: ${videoDate} → ${videoDateOnly.toISOString()} <= ${currentDateOnly.toISOString()} = ${result}`);
+    return result;
+  }
+  
+  // videoDateが文字列の場合
+  if (typeof videoDate === 'string') {
+    if (!videoDate || videoDate.length !== 8) {
+      console.log(`文字列が無効: ${videoDate}`);
+      return false;
+    }
+    const currentDateString = getCurrentDateString();
+    const result = videoDate <= currentDateString;
+    console.log(`文字列比較: ${videoDate} <= ${currentDateString} = ${result}`);
+    return result;
+  }
+  
+  // その他の場合はfalse
+  console.log(`未対応の型: ${typeof videoDate}`);
+  return false;
 }
 
 // 特殊文字を処理する関数
@@ -69,10 +108,21 @@ function processVideos() {
     }
 
     // 公開日が現在日付より後の場合はスキップ
-    if (!isVideoPublished(date)) {
-      console.log(`${title}は公開日が未来のためスキップします。公開日: ${date}`)
+    console.log(`${title}の日付チェック開始: ${date}`);
+    const isPublished = isVideoPublished(date);
+    console.log(`${title}の日付チェック結果: ${isPublished}`);
+    
+    if (!isPublished) {
+      let dateInfo = `${date} (型: ${typeof date})`;
+      if (typeof date === 'number') {
+        const dateObj = new Date(date);
+        dateInfo += ` → ${dateObj.toISOString().split('T')[0]}`;
+      }
+      console.log(`${title}は公開日が未来のためスキップします。公開日: ${dateInfo}`)
       continue;
     }
+    
+    console.log(`${title}は公開済みのため処理を続行します`);
 
     try {
       // Cloudinaryのフォルダー存在確認
