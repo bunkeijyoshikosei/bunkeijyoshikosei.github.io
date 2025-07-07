@@ -37,16 +37,24 @@ function isVideoPublished(videoDate) {
   
   // videoDateが数値の場合（スプレッドシートの日付）
   if (typeof videoDate === 'number') {
-    // Excelの日付形式（1900年1月1日からの日数）をJavaScriptのDateに変換
-    const excelEpoch = new Date(1900, 0, 1); // 1900年1月1日
-    const dateObj = new Date(excelEpoch.getTime() + (videoDate - 2) * 24 * 60 * 60 * 1000);
-    const currentDate = new Date();
-    // 日付のみを比較（時刻は無視）
-    const videoDateOnly = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
-    const currentDateOnly = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-    const result = videoDateOnly <= currentDateOnly;
-    console.log(`数値比較: ${videoDate} → ${videoDateOnly.toISOString()} <= ${currentDateOnly.toISOString()} = ${result}`);
-    return result;
+    // YYYYMMDD形式の数値を文字列に変換してから日付に変換
+    const dateString = String(videoDate);
+    if (dateString.length === 8) {
+      const year = parseInt(dateString.substring(0, 4));
+      const month = parseInt(dateString.substring(4, 6)) - 1; // 月は0ベース
+      const day = parseInt(dateString.substring(6, 8));
+      const dateObj = new Date(year, month, day);
+      const currentDate = new Date();
+      // 日付のみを比較（時刻は無視）
+      const videoDateOnly = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+      const currentDateOnly = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+      const result = videoDateOnly <= currentDateOnly;
+      console.log(`数値比較: ${videoDate} → ${videoDateOnly.toISOString()} <= ${currentDateOnly.toISOString()} = ${result}`);
+      return result;
+    } else {
+      console.log(`数値の形式が不正: ${videoDate}`);
+      return false;
+    }
   }
   
   // videoDateが文字列の場合
